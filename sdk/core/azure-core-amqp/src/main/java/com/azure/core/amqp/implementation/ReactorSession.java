@@ -91,7 +91,7 @@ public class ReactorSession implements AmqpSession {
         this.subscriptions = Disposables.composite(
             this.sessionHandler.getEndpointStates().subscribe(
                 state -> {
-                    logger.verbose("Connection state: {}", state);
+                    logger.verbose("[{}] Connection state: {}", sessionName, state);
                     endpointStateSink.next(AmqpEndpointStateUtil.getConnectionState(state));
                 }, error -> {
                     logger.error("[{}] Error occurred in session endpoint handler.", sessionName, error);
@@ -331,7 +331,8 @@ public class ReactorSession implements AmqpSession {
         sender.setSenderSettleMode(SenderSettleMode.UNSETTLED);
 
         final SendLinkHandler sendLinkHandler = handlerProvider.createSendLinkHandler(
-            sessionHandler.getConnectionId(), sessionHandler.getHostname(), linkName, entityPath);
+            sessionHandler.getConnectionId(), sessionHandler.getHostname(), linkName,
+            entityPath, sessionHandler.getCustomHostName());
         BaseHandler.setHandler(sender, sendLinkHandler);
 
         sender.open();
@@ -386,7 +387,8 @@ public class ReactorSession implements AmqpSession {
         }
 
         final ReceiveLinkHandler receiveLinkHandler = handlerProvider.createReceiveLinkHandler(
-            sessionHandler.getConnectionId(), sessionHandler.getHostname(), linkName, entityPath);
+            sessionHandler.getConnectionId(), sessionHandler.getHostname(),
+            linkName, entityPath, sessionHandler.getCustomHostName());
         BaseHandler.setHandler(receiver, receiveLinkHandler);
 
         receiver.open();

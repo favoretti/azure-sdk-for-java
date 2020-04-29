@@ -46,7 +46,7 @@ public class WebSocketsConnectionHandlerTest {
     @BeforeEach
     public void setup() {
         MockitoAnnotations.initMocks(this);
-        handler = new WebSocketsConnectionHandler(CONNECTION_ID, HOSTNAME, PRODUCT, CLIENT_VERSION);
+        handler = new WebSocketsConnectionHandler(CONNECTION_ID, HOSTNAME, PRODUCT, CLIENT_VERSION, null);
     }
 
     @AfterEach

@@ -132,6 +132,7 @@ public class EventHubClientBuilder {
     private String consumerGroup;
     private EventHubConnectionProcessor eventHubConnectionProcessor;
     private int prefetchCount;
+    private String customHostName;
 
     /**
      * Keeps track of the open clients that were created from this builder when there is a shared connection.
@@ -176,6 +177,7 @@ public class EventHubClientBuilder {
         final TokenCredential tokenCredential = new EventHubSharedKeyCredential(properties.getSharedAccessKeyName(),
             properties.getSharedAccessKey(), ClientConstants.TOKEN_VALIDITY);
 
+        this.customHostName = properties.getCustomHostName();
         return credential(properties.getEndpoint().getHost(), properties.getEntityPath(), tokenCredential);
     }
 
@@ -218,6 +220,7 @@ public class EventHubClientBuilder {
                     + "Or supply a 'connectionString' without 'EntityPath' in it.",
                 properties.getEntityPath(), eventHubName)));
         }
+        this.customHostName = properties.getCustomHostName();
 
         return credential(properties.getEndpoint().getHost(), eventHubName, tokenCredential);
     }
@@ -609,7 +612,7 @@ public class EventHubClientBuilder {
             : CbsAuthorizationType.JSON_WEB_TOKEN;
 
         return new ConnectionOptions(fullyQualifiedNamespace, credentials, authorizationType, transport, retryOptions,
-            proxyOptions, scheduler);
+            proxyOptions, scheduler, customHostName);
     }
 
     private ProxyOptions getDefaultProxyConfiguration(Configuration configuration) {

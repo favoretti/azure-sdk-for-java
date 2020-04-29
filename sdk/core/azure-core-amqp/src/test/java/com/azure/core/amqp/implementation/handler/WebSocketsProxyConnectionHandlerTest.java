@@ -59,13 +59,13 @@ public class WebSocketsProxyConnectionHandlerTest {
     @Test
     public void nullProxyConfiguration() {
         assertThrows(NullPointerException.class, () -> new WebSocketsProxyConnectionHandler(CONNECTION_ID, HOSTNAME,
-            null, PRODUCT, CLIENT_VERSION));
+            null, PRODUCT, CLIENT_VERSION, null));
     }
 
     @Test
     public void nullHostname() {
         assertThrows(NullPointerException.class, () -> new WebSocketsProxyConnectionHandler(CONNECTION_ID, null,
-            PROXY_CONFIGURATION, PRODUCT, CLIENT_VERSION));
+            PROXY_CONFIGURATION, PRODUCT, CLIENT_VERSION, null));
     }
 
     /**
@@ -78,7 +78,7 @@ public class WebSocketsProxyConnectionHandlerTest {
             .thenReturn(Collections.singletonList(PROXY));
 
         final WebSocketsProxyConnectionHandler handler = new WebSocketsProxyConnectionHandler(CONNECTION_ID, HOSTNAME,
-            PROXY_CONFIGURATION, PRODUCT, CLIENT_VERSION);
+            PROXY_CONFIGURATION, PRODUCT, CLIENT_VERSION, null);
 
         // Act and Assert
         Assertions.assertEquals(PROXY_ADDRESS.getHostName(), handler.getHostname());
@@ -95,7 +95,7 @@ public class WebSocketsProxyConnectionHandlerTest {
             .thenReturn(Collections.singletonList(PROXY));
 
         final WebSocketsProxyConnectionHandler handler = new WebSocketsProxyConnectionHandler(CONNECTION_ID, HOSTNAME,
-            ProxyOptions.SYSTEM_DEFAULTS, PRODUCT, CLIENT_VERSION);
+            ProxyOptions.SYSTEM_DEFAULTS, PRODUCT, CLIENT_VERSION, null);
 
         // Act and Assert
         Assertions.assertEquals(PROXY_ADDRESS.getHostName(), handler.getHostname());
@@ -119,7 +119,7 @@ public class WebSocketsProxyConnectionHandlerTest {
         when(proxySelector.select(any())).thenReturn(Collections.singletonList(PROXY));
 
         final WebSocketsProxyConnectionHandler handler = new WebSocketsProxyConnectionHandler(CONNECTION_ID, host,
-            configuration, PRODUCT, CLIENT_VERSION);
+            configuration, PRODUCT, CLIENT_VERSION, null);
 
         // Act and Assert
         Assertions.assertEquals(address.getHostName(), handler.getHostname());

@@ -60,7 +60,7 @@ public class ReactorSessionTest {
         when(event.getSession()).thenReturn(session);
 
         ReactorDispatcher dispatcher = new ReactorDispatcher(reactor);
-        this.handler = new SessionHandler(ID, HOST, ENTITY_PATH, dispatcher, Duration.ofSeconds(60));
+        this.handler = new SessionHandler(ID, HOST, ENTITY_PATH, dispatcher, Duration.ofSeconds(60), null);
 
         when(reactorProvider.getReactor()).thenReturn(reactor);
         when(reactorProvider.getReactorDispatcher()).thenReturn(dispatcher);
@@ -107,7 +107,7 @@ public class ReactorSessionTest {
             .expectComplete()
             .verify(Duration.ofSeconds(10));
     }
-    
+
     @Test
     public void verifyDispose() {
         reactorSession.dispose();

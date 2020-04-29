@@ -3,6 +3,7 @@
 
 package com.azure.core.amqp.implementation.handler;
 
+import com.azure.core.util.CoreUtils;
 import com.azure.core.util.logging.ClientLogger;
 import com.microsoft.azure.proton.transport.ws.impl.WebSocketImpl;
 import org.apache.qpid.proton.engine.Event;
@@ -31,8 +32,8 @@ public class WebSocketsConnectionHandler extends ConnectionHandler {
      * @param clientVersion The version of the client library creating the connection handler.
      */
     public WebSocketsConnectionHandler(final String connectionId, final String hostname, final String product,
-        final String clientVersion) {
-        super(connectionId, hostname, product, clientVersion);
+        final String clientVersion, final String customHostName) {
+        super(connectionId, hostname, product, clientVersion, customHostName);
     }
 
     @Override
@@ -41,7 +42,7 @@ public class WebSocketsConnectionHandler extends ConnectionHandler {
 
         final WebSocketImpl webSocket = new WebSocketImpl();
         webSocket.configure(
-            hostName,
+            (CoreUtils.isNullOrEmpty(getCustomHostName()) ? hostName : getCustomHostName()),
             SOCKET_PATH,
             "",
             0,

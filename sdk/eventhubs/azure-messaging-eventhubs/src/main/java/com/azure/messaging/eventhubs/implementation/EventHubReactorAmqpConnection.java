@@ -45,6 +45,7 @@ public class EventHubReactorAmqpConnection extends ReactorConnection implements 
     private final MessageSerializer messageSerializer;
     private final Scheduler scheduler;
     private final String eventHubName;
+    private final String customHostName;
 
     private volatile ManagementChannel managementChannel;
 
@@ -74,6 +75,7 @@ public class EventHubReactorAmqpConnection extends ReactorConnection implements 
         this.retryOptions = connectionOptions.getRetry();
         this.tokenCredential = connectionOptions.getTokenCredential();
         this.scheduler = connectionOptions.getScheduler();
+        this.customHostName = connectionOptions.getCustomHostName();
     }
 
     @Override
@@ -98,7 +100,7 @@ public class EventHubReactorAmqpConnection extends ReactorConnection implements 
     @Override
     public Mono<AmqpSendLink> createSendLink(String linkName, String entityPath, AmqpRetryOptions retryOptions) {
         return createSession(entityPath).flatMap(session -> {
-            logger.verbose("Get or create producer for path: '{}'", entityPath);
+            logger.verbose("Get or create producer for path: '{}', linkName: [{}]", entityPath, linkName);
             final AmqpRetryPolicy retryPolicy = RetryUtil.getRetryPolicy(retryOptions);
 
             return session.createProducer(linkName, entityPath, retryOptions.getTryTimeout(), retryPolicy)
@@ -153,7 +155,8 @@ public class EventHubReactorAmqpConnection extends ReactorConnection implements 
     private synchronized ManagementChannel getOrCreateManagementChannel() {
         if (managementChannel == null) {
             managementChannel = new ManagementChannel(
-                createRequestResponseChannel(MANAGEMENT_SESSION_NAME, MANAGEMENT_LINK_NAME, MANAGEMENT_ADDRESS),
+                createRequestResponseChannel(MANAGEMENT_SESSION_NAME, MANAGEMENT_LINK_NAME,
+                    MANAGEMENT_ADDRESS, customHostName),
                 eventHubName, tokenCredential, tokenManagerProvider, this.messageSerializer, scheduler);
         }
 

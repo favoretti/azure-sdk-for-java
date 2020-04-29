@@ -46,8 +46,9 @@ public class ConnectionHandler extends Handler {
      * @param product The name of the product this connection handler is created for.
      * @param clientVersion The version of the client library creating the connection handler.
      */
-    public ConnectionHandler(final String connectionId, final String hostname, String product, String clientVersion) {
-        super(connectionId, hostname);
+    public ConnectionHandler(final String connectionId, final String hostname,
+                             String product, String clientVersion, String customHostName) {
+        super(connectionId, hostname, customHostName);
 
         add(new Handshaker());
 
@@ -99,10 +100,12 @@ public class ConnectionHandler extends Handler {
 
     @Override
     public void onConnectionInit(Event event) {
-        logger.info("onConnectionInit hostname[{}], connectionId[{}]", getHostname(), getConnectionId());
 
         final Connection connection = event.getConnection();
+
         final String hostName = getHostname() + ":" + getProtocolPort();
+
+        logger.info("onConnectionInit hostname[{}], connectionId[{}]", hostName, getConnectionId());
 
         connection.setHostname(hostName);
         connection.setContainer(getConnectionId());
@@ -239,7 +242,8 @@ public class ConnectionHandler extends Handler {
     }
 
     public AmqpErrorContext getErrorContext() {
-        return new AmqpErrorContext(getHostname());
+        return new AmqpErrorContext(
+            String.format("This should be the namespace, not hostname, hostname is: [{}], though", getHostname()));
     }
 
     private static SslDomain createSslDomain(SslDomain.Mode mode) {

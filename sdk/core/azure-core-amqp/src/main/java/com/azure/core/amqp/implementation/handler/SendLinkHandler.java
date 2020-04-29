@@ -25,8 +25,9 @@ public class SendLinkHandler extends LinkHandler {
     private final FluxSink<Integer> creditSink = creditProcessor.sink();
     private final FluxSink<Delivery> deliverySink = deliveryProcessor.sink();
 
-    public SendLinkHandler(String connectionId, String hostname, String senderName, String entityPath) {
-        super(connectionId, hostname, entityPath, new ClientLogger(SendLinkHandler.class));
+    public SendLinkHandler(String connectionId, String hostname,
+                           String senderName, String entityPath, String customHostName) {
+        super(connectionId, hostname, entityPath, new ClientLogger(SendLinkHandler.class), customHostName);
         this.senderName = senderName;
     }
 
@@ -58,6 +59,7 @@ public class SendLinkHandler extends LinkHandler {
     public void onLinkRemoteOpen(Event event) {
         final Link link = event.getLink();
         if (link instanceof Sender) {
+            logger.info("Link data: {}", link.toString());
             if (link.getRemoteTarget() != null) {
                 logger.info("onLinkRemoteOpen connectionId[{}], linkName[{}], remoteTarget[{}]",
                     getConnectionId(), link.getName(), link.getRemoteTarget());

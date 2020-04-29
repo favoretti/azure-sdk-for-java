@@ -212,7 +212,7 @@ class LinkHandlerTest {
 
     private static final class MockLinkHandler extends LinkHandler {
         MockLinkHandler(String connectionId, String hostname, String entityPath, ClientLogger logger) {
-            super(connectionId, hostname, entityPath, logger);
+            super(connectionId, hostname, entityPath, logger, null);
         }
     }
 }

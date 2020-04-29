@@ -28,24 +28,24 @@ class MockReactorHandlerProvider extends ReactorHandlerProvider {
     }
 
     @Override
-    public SessionHandler createSessionHandler(String connectionId, String hostname, String sessionName, Duration openTimeout) {
+    public SessionHandler createSessionHandler(String connectionId, String hostname, String sessionName, Duration openTimeout, String customHostName) {
         return sessionHandler;
     }
 
     @Override
     public ConnectionHandler createConnectionHandler(String connectionId, String hostname,
-        AmqpTransportType transportType, ProxyOptions configuration, String product, String clientVersion) {
+        AmqpTransportType transportType, ProxyOptions configuration, String product, String clientVersion, String customHostName) {
 
         return connectionHandler;
     }
 
     @Override
-    public SendLinkHandler createSendLinkHandler(String connectionId, String fullyQualifiedNamespace, String senderName, String entityPath) {
+    public SendLinkHandler createSendLinkHandler(String connectionId, String fullyQualifiedNamespace, String senderName, String entityPath, String customHostName) {
         return sendLinkHandler;
     }
 
     @Override
-    public ReceiveLinkHandler createReceiveLinkHandler(String connectionId, String fullyQualifiedNamespace, String receiverName, String entityPath) {
+    public ReceiveLinkHandler createReceiveLinkHandler(String connectionId, String fullyQualifiedNamespace, String receiverName, String entityPath, String customHostName) {
         return receiveLinkHandler;
     }
 }

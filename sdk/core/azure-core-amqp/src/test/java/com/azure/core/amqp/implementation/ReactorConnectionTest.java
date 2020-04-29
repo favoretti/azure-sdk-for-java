@@ -13,6 +13,7 @@ import com.azure.core.amqp.exception.AmqpException;
 import com.azure.core.amqp.implementation.handler.ConnectionHandler;
 import com.azure.core.amqp.implementation.handler.SessionHandler;
 import com.azure.core.credential.TokenCredential;
+import com.azure.core.util.CoreUtils;
 import org.apache.qpid.proton.amqp.Symbol;
 import org.apache.qpid.proton.amqp.transport.ErrorCondition;
 import org.apache.qpid.proton.amqp.transport.ReceiverSettleMode;
@@ -56,8 +57,10 @@ class ReactorConnectionTest {
     private static final Duration TEST_DURATION = Duration.ofSeconds(30);
     private static final ConnectionStringProperties CREDENTIAL_INFO = new ConnectionStringProperties("Endpoint=sb"
         + "://test-event-hub.servicebus.windows.net/;SharedAccessKeyName=dummySharedKeyName;"
-        + "SharedAccessKey=dummySharedKeyValue;EntityPath=eventhub1;");
-    private static final String HOSTNAME = CREDENTIAL_INFO.getEndpoint().getHost();
+        + "SharedAccessKey=dummySharedKeyValue;EntityPath=eventhub1;CustomHostname=104.208.16.3");
+    private static final String HOSTNAME = (!CoreUtils.isNullOrEmpty(CREDENTIAL_INFO.getCustomHostName())
+        ? CREDENTIAL_INFO.getCustomHostName()
+        : CREDENTIAL_INFO.getEndpoint().getHost());
     private static final Scheduler SCHEDULER = Schedulers.elastic();
     private static final String PRODUCT = "test";
     private static final String CLIENT_VERSION = "1.0.0-test";
@@ -98,7 +101,7 @@ class ReactorConnectionTest {
     @BeforeEach
     void setup() throws IOException {
         MockitoAnnotations.initMocks(this);
-        connectionHandler = new ConnectionHandler(CONNECTION_ID, HOSTNAME, PRODUCT, CLIENT_VERSION);
+        connectionHandler = new ConnectionHandler(CONNECTION_ID, HOSTNAME, PRODUCT, CLIENT_VERSION, null);
 
         when(reactor.selectable()).thenReturn(selectable);
         when(reactor.connectionToHost(HOSTNAME, connectionHandler.getProtocolPort(), connectionHandler))
@@ -111,7 +114,7 @@ class ReactorConnectionTest {
         when(reactorProvider.getReactorDispatcher()).thenReturn(reactorDispatcher);
         when(reactorProvider.createReactor(CONNECTION_ID, connectionHandler.getMaxFrameSize())).thenReturn(reactor);
 
-        sessionHandler = new SessionHandler(CONNECTION_ID, HOSTNAME, SESSION_NAME, reactorDispatcher, TEST_DURATION);
+        sessionHandler = new SessionHandler(CONNECTION_ID, HOSTNAME, SESSION_NAME, reactorDispatcher, TEST_DURATION, null);
 
         final ReactorHandlerProvider reactorHandlerProvider = new MockReactorHandlerProvider(reactorProvider,
             connectionHandler, sessionHandler, null, null);
@@ -119,7 +122,7 @@ class ReactorConnectionTest {
         final AmqpRetryOptions retryOptions = new AmqpRetryOptions().setMaxRetries(0).setTryTimeout(TEST_DURATION);
         final ConnectionOptions connectionOptions = new ConnectionOptions(CREDENTIAL_INFO.getEndpoint().getHost(),
             tokenProvider, CbsAuthorizationType.SHARED_ACCESS_SIGNATURE, AmqpTransportType.AMQP, retryOptions,
-            ProxyOptions.SYSTEM_DEFAULTS, SCHEDULER);
+            ProxyOptions.SYSTEM_DEFAULTS, SCHEDULER, HOSTNAME);
         connection = new ReactorConnection(CONNECTION_ID, connectionOptions, reactorProvider, reactorHandlerProvider,
             tokenManager, messageSerializer, PRODUCT, CLIENT_VERSION, SenderSettleMode.SETTLED,
             ReceiverSettleMode.FIRST);
@@ -303,7 +306,7 @@ class ReactorConnectionTest {
     @Test
     void createCBSNodeTimeoutException() {
         // Arrange
-        final ConnectionHandler handler = new ConnectionHandler(CONNECTION_ID, HOSTNAME, PRODUCT, CLIENT_VERSION);
+        final ConnectionHandler handler = new ConnectionHandler(CONNECTION_ID, HOSTNAME, PRODUCT, CLIENT_VERSION, null);
         final ReactorHandlerProvider provider = new MockReactorHandlerProvider(reactorProvider, handler, sessionHandler,
             null, null);
 
@@ -315,7 +318,7 @@ class ReactorConnectionTest {
             .setTryTimeout(timeout);
         ConnectionOptions parameters = new ConnectionOptions(CREDENTIAL_INFO.getEndpoint().getHost(),
             tokenProvider, CbsAuthorizationType.SHARED_ACCESS_SIGNATURE, AmqpTransportType.AMQP, retryOptions,
-            ProxyOptions.SYSTEM_DEFAULTS, Schedulers.parallel());
+            ProxyOptions.SYSTEM_DEFAULTS, Schedulers.parallel(), HOSTNAME);
 
         // Act and Assert
         ReactorConnection connectionBad = new ReactorConnection(CONNECTION_ID, parameters, reactorProvider,

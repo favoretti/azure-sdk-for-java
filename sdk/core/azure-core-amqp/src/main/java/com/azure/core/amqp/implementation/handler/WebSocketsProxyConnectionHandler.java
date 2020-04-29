@@ -54,9 +54,12 @@ public class WebSocketsProxyConnectionHandler extends WebSocketsConnectionHandle
      * @throws NullPointerException if {@code amqpHostname} or {@code proxyConfiguration} is null.
      */
     public WebSocketsProxyConnectionHandler(String connectionId, String amqpHostname,
-                                            ProxyOptions proxyOptions, String product, String clientVersion) {
-        super(connectionId, amqpHostname, product, clientVersion);
-        this.amqpHostname = Objects.requireNonNull(amqpHostname, "'amqpHostname' cannot be null.");
+                                            ProxyOptions proxyOptions, String product,
+                                            String clientVersion, String customHostName) {
+        super(connectionId, amqpHostname, product, clientVersion, customHostName);
+        this.amqpHostname = (CoreUtils.isNullOrEmpty(customHostName)
+            ? Objects.requireNonNull(amqpHostname, "'amqpHostname' cannot be null.")
+            : customHostName);
         this.proxyOptions = Objects.requireNonNull(proxyOptions, "'proxyConfiguration' cannot be null.");
         this.remoteHost = amqpHostname + ":" + HTTPS_PORT;
     }

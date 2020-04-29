@@ -97,8 +97,9 @@ public class ReactorConnection implements AmqpConnection {
             "'tokenManagerProvider' cannot be null.");
         this.messageSerializer = messageSerializer;
         this.handler = handlerProvider.createConnectionHandler(connectionId,
-            connectionOptions.getFullyQualifiedNamespace(), connectionOptions.getTransportType(),
-            connectionOptions.getProxyOptions(), product, clientVersion);
+            connectionOptions.getFullyQualifiedNamespace(),
+            connectionOptions.getTransportType(),
+            connectionOptions.getProxyOptions(), product, clientVersion, connectionOptions.getCustomHostName());
         this.retryPolicy = RetryUtil.getRetryPolicy(connectionOptions.getRetry());
         this.senderSettleMode = senderSettleMode;
         this.receiverSettleMode = receiverSettleMode;
@@ -168,7 +169,8 @@ public class ReactorConnection implements AmqpConnection {
      */
     @Override
     public String getFullyQualifiedNamespace() {
-        return handler.getHostname();
+        return connectionOptions.getFullyQualifiedNamespace();
+        //return handler.getHostname();
     }
 
     /**
@@ -205,7 +207,8 @@ public class ReactorConnection implements AmqpConnection {
         return connectionMono.map(connection -> {
             final SessionSubscription sessionSubscription = sessionMap.computeIfAbsent(sessionName, key -> {
                 final SessionHandler handler = handlerProvider.createSessionHandler(connectionId,
-                    getFullyQualifiedNamespace(), key, connectionOptions.getRetry().getTryTimeout());
+                    getFullyQualifiedNamespace(), key, connectionOptions.getRetry().getTryTimeout(),
+                    connectionOptions.getCustomHostName());
                 final Session session = connection.session();
 
                 BaseHandler.setHandler(session, handler);
@@ -310,12 +313,12 @@ public class ReactorConnection implements AmqpConnection {
      * @return A new {@link RequestResponseChannel} to communicate with the message broker.
      */
     protected Mono<RequestResponseChannel> createRequestResponseChannel(String sessionName, String linkName,
-        String entityPath) {
+        String entityPath, String customHostName) {
 
         final Flux<RequestResponseChannel> createChannel = createSession(sessionName).cast(ReactorSession.class)
             .map(reactorSession -> new RequestResponseChannel(getId(), getFullyQualifiedNamespace(), linkName,
                 entityPath, reactorSession.session(), connectionOptions.getRetry(), handlerProvider, reactorProvider,
-                messageSerializer, senderSettleMode, receiverSettleMode))
+                messageSerializer, senderSettleMode, receiverSettleMode, customHostName))
             .doOnNext(e -> {
                 logger.info("Emitting new response channel. connectionId: {}. entityPath: {}. linkName: {}.",
                     getId(), entityPath, linkName);
@@ -332,7 +335,8 @@ public class ReactorConnection implements AmqpConnection {
             logger.info("Setting CBS channel.");
 
             cbsChannel = new ClaimsBasedSecurityChannel(
-                createRequestResponseChannel(CBS_SESSION_NAME, CBS_LINK_NAME, CBS_ADDRESS),
+                createRequestResponseChannel(CBS_SESSION_NAME, CBS_LINK_NAME,
+                    CBS_ADDRESS, connectionOptions.getCustomHostName()),
                 connectionOptions.getTokenCredential(), connectionOptions.getAuthorizationType(),
                 connectionOptions.getRetry());
         }

@@ -91,7 +91,7 @@ public class RequestResponseChannel implements Disposable {
     protected RequestResponseChannel(String connectionId, String fullyQualifiedNamespace, String linkName,
             String entityPath, Session session, AmqpRetryOptions retryOptions, ReactorHandlerProvider handlerProvider,
             ReactorProvider provider, MessageSerializer messageSerializer,
-            SenderSettleMode senderSettleMode, ReceiverSettleMode receiverSettleMode) {
+            SenderSettleMode senderSettleMode, ReceiverSettleMode receiverSettleMode, String customHostName) {
         this.logger = new ClientLogger(String.format("%s<%s>", RequestResponseChannel.class, linkName));
         this.provider = provider;
         this.operationTimeout = retryOptions.getTryTimeout();
@@ -108,7 +108,7 @@ public class RequestResponseChannel implements Disposable {
         this.sendLink.setSenderSettleMode(senderSettleMode);
 
         this.sendLinkHandler = handlerProvider.createSendLinkHandler(connectionId, fullyQualifiedNamespace, linkName,
-            entityPath);
+            entityPath, customHostName);
 
         BaseHandler.setHandler(sendLink, sendLinkHandler);
 
@@ -124,7 +124,7 @@ public class RequestResponseChannel implements Disposable {
         this.receiveLink.setReceiverSettleMode(receiverSettleMode);
 
         this.receiveLinkHandler = handlerProvider.createReceiveLinkHandler(connectionId, fullyQualifiedNamespace,
-            linkName, entityPath);
+            linkName, entityPath, customHostName);
         BaseHandler.setHandler(this.receiveLink, receiveLinkHandler);
 
         //@formatter:off

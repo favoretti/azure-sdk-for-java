@@ -46,20 +46,26 @@ public class ReactorHandlerProvider {
      * @return A new {@link ConnectionHandler}.
      */
     public ConnectionHandler createConnectionHandler(String connectionId, String hostname,
-            AmqpTransportType transportType, ProxyOptions proxyOptions, String product, String clientVersion) {
+            AmqpTransportType transportType, ProxyOptions proxyOptions, String product,
+                                                     String clientVersion, String customHostName) {
         switch (transportType) {
             case AMQP:
-                return new ConnectionHandler(connectionId, hostname, product, clientVersion);
+                return new ConnectionHandler(connectionId, hostname, product, clientVersion, customHostName);
             case AMQP_WEB_SOCKETS:
                 if (proxyOptions != null && proxyOptions.isProxyAddressConfigured()) {
                     return new WebSocketsProxyConnectionHandler(connectionId, hostname, proxyOptions, product,
-                        clientVersion);
+                        clientVersion, customHostName);
+                } else if (WebSocketsProxyConnectionHandler.shouldUseProxy(customHostName)) {
+                    logger.info("System default proxy configured for hostname '{}'. Using proxy.", customHostName);
+                    return new WebSocketsProxyConnectionHandler(connectionId, hostname,
+                        ProxyOptions.SYSTEM_DEFAULTS, product, clientVersion, customHostName);
                 } else if (WebSocketsProxyConnectionHandler.shouldUseProxy(hostname)) {
                     logger.info("System default proxy configured for hostname '{}'. Using proxy.", hostname);
                     return new WebSocketsProxyConnectionHandler(connectionId, hostname,
-                        ProxyOptions.SYSTEM_DEFAULTS, product, clientVersion);
+                        ProxyOptions.SYSTEM_DEFAULTS, product, clientVersion, customHostName);
                 } else {
-                    return new WebSocketsConnectionHandler(connectionId, hostname, product, clientVersion);
+                    return new WebSocketsConnectionHandler(connectionId, hostname,
+                        product, clientVersion, customHostName);
                 }
             default:
                 throw logger.logExceptionAsWarning(new IllegalArgumentException(String.format(Locale.US,
@@ -77,8 +83,9 @@ public class ReactorHandlerProvider {
      * @return A new {@link SessionHandler}.
      */
     public SessionHandler createSessionHandler(String connectionId, String hostname, String sessionName,
-                                               Duration openTimeout) {
-        return new SessionHandler(connectionId, hostname, sessionName, provider.getReactorDispatcher(), openTimeout);
+                                               Duration openTimeout, String customHostName) {
+        return new SessionHandler(connectionId, hostname, sessionName,
+            provider.getReactorDispatcher(), openTimeout, customHostName);
     }
 
     /**
@@ -90,8 +97,8 @@ public class ReactorHandlerProvider {
      * @return A new {@link SendLinkHandler}.
      */
     public SendLinkHandler createSendLinkHandler(String connectionId, String fullyQualifiedNamespace, String senderName,
-                                                 String entityPath) {
-        return new SendLinkHandler(connectionId, fullyQualifiedNamespace, senderName, entityPath);
+                                                 String entityPath, String customHostName) {
+        return new SendLinkHandler(connectionId, fullyQualifiedNamespace, senderName, entityPath, customHostName);
     }
 
     /**
@@ -103,7 +110,7 @@ public class ReactorHandlerProvider {
      * @return A new {@link ReceiveLinkHandler}.
      */
     public ReceiveLinkHandler createReceiveLinkHandler(String connectionId, String fullyQualifiedNamespace,
-            String receiverName, String entityPath) {
-        return new ReceiveLinkHandler(connectionId, fullyQualifiedNamespace, receiverName, entityPath);
+            String receiverName, String entityPath, String customHostName) {
+        return new ReceiveLinkHandler(connectionId, fullyQualifiedNamespace, receiverName, entityPath, customHostName);
     }
 }

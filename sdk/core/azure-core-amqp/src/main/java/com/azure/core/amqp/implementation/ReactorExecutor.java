@@ -109,7 +109,10 @@ class ReactorExecutor implements Closeable {
                     : "Reactor encountered unrecoverable error";
 
             final AmqpException exception;
-            final AmqpErrorContext errorContext = new AmqpErrorContext(hostname);
+            final AmqpErrorContext errorContext =
+                new AmqpErrorContext(
+                    String.format("This should have been namespace, but "
+                        + "since reactor doesn't care, here's a hostname: {}", hostname));
 
             if (cause instanceof UnresolvedAddressException) {
                 exception = new AmqpException(true,

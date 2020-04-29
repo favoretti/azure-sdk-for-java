@@ -97,7 +97,7 @@ class ReactorReceiverTest {
 
         final String entityPath = "test-entity-path";
         receiverHandler = new ReceiveLinkHandler("test-connection-id", "test-host",
-            "test-receiver-name", entityPath);
+            "test-receiver-name", entityPath, null);
         final ActiveClientTokenManager tokenManager = new ActiveClientTokenManager(Mono.just(cbsNode),
             "test-tokenAudience", "test-scopes");
 

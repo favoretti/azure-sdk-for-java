@@ -3,6 +3,7 @@
 
 package com.azure.core.amqp.implementation.handler;
 
+import com.azure.core.util.CoreUtils;
 import org.apache.qpid.proton.engine.BaseHandler;
 import org.apache.qpid.proton.engine.EndpointState;
 import reactor.core.publisher.Flux;
@@ -20,10 +21,12 @@ public abstract class Handler extends BaseHandler implements Closeable {
     private final FluxSink<Throwable> errorSink = errorContextProcessor.sink();
     private final String connectionId;
     private final String hostname;
+    private final String customHostName;
 
-    Handler(final String connectionId, final String hostname) {
+    Handler(final String connectionId, final String hostname, final String customHostName) {
         this.connectionId = connectionId;
         this.hostname = hostname;
+        this.customHostName = customHostName;
     }
 
     public String getConnectionId() {
@@ -31,7 +34,11 @@ public abstract class Handler extends BaseHandler implements Closeable {
     }
 
     public String getHostname() {
-        return hostname;
+        return CoreUtils.isNullOrEmpty(customHostName) ? hostname : customHostName;
+    }
+
+    public String getCustomHostName() {
+        return customHostName;
     }
 
     public Flux<EndpointState> getEndpointStates() {
